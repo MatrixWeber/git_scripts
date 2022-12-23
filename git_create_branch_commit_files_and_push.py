@@ -36,8 +36,7 @@ def create_branch(branch_name, commit_message, files):
 
     # Commit the changes with the given commit message
     try:
-        # TODO maybe a bug
-        subprocess.run(["git", "commit", "-am", commit_message])
+        subprocess.run(["git", "commit", "-m", commit_message])
     except subprocess.CalledProcessError:
         print("Error: could not commit files")
         sys.exit(1)
