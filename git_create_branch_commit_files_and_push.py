@@ -24,22 +24,22 @@ def create_branch(branch_name, commit_message, files):
     if files:
         try:
             subprocess.run(["git", "add"] + files, check=True)
+            #Commit the changes with the given commit message
+            try:
+                subprocess.run(["git", "commit", "-am", commit_message])
+            except subprocess.CalledProcessError:
+                print("Error: could not commit files")
+                sys.exit(1)
         except subprocess.CalledProcessError:
             print(f"Error: one or more files could not be added")
             sys.exit(1)
     else:
+        # Commit the changes with the given commit message
         try:
-            subprocess.run(["git", "add", "-A"], check=True)
+            subprocess.run(["git", "commit", "-am", commit_message])
         except subprocess.CalledProcessError:
-            print("Error: no modified files to commit")
+            print("Error: could not commit files")
             sys.exit(1)
-
-    # Commit the changes with the given commit message
-    try:
-        subprocess.run(["git", "commit", "-m", commit_message])
-    except subprocess.CalledProcessError:
-        print("Error: could not commit files")
-        sys.exit(1)
 
     try:
         # Push the new branch to the remote repository
