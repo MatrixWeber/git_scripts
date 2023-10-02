@@ -3,32 +3,34 @@ import subprocess
 import sys
 
 
-def create_branch(args):
+def create_branch(arguments):
     # Create a new branch with the given name, or use the current branch if none is specified
-    if args.branch_name:
+    if arguments.branch_name:
         try:
-            subprocess.run(["git", "checkout", "-b", args.branch_name], check=False)
+            output = subprocess.run(["git", "checkout", "-b", arguments.branch_name], check=False)
+            if output.returncode:
+                subprocess.run(["git", "checkout", arguments.branch_name], check=False)
         except subprocess.CalledProcessError:
-            print(f"Error: invalid branch name '{args.branch_name}'")
+            print(f"Error: invalid branch name '{arguments.branch_name}'")
             sys.exit(1)
     else:
         # Get the current branch name
         try:
             result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], stdout=subprocess.PIPE, check=True)
-            args.branch_name = result.stdout.decode().strip()
+            arguments.branch_name = result.stdout.decode().strip()
         except subprocess.CalledProcessError:
             print("Error: not a Git repository")
             sys.exit(1)
 
     # Add the specified files to the staging area, or add all modified files if none are specified
-    if args.files:
+    if arguments.files:
         try:
-            subprocess.run(["git", "add"] + args.files, check=True)
+            subprocess.run(["git", "add"] + arguments.files, check=True)
             #Commit the changes with the given commit message
             try:
-                subprocess.run(["git", "commit", "-m", args.commit_message])
+                subprocess.run(["git", "commit", "-m", arguments.commit_message])
             except subprocess.CalledProcessError:
-                print(f"Error: could not commit files: '{args.files}'")
+                print(f"Error: could not commit files: '{arguments.files}'")
                 sys.exit(1)
         except subprocess.CalledProcessError:
             print(f"Error: one or more files could not be added")
@@ -36,17 +38,17 @@ def create_branch(args):
     else:
         # Commit the changes with the given commit message
         try:
-            subprocess.run(["git", "commit", "-am", args.commit_message])
+            subprocess.run(["git", "commit", "-am", arguments.commit_message])
         except subprocess.CalledProcessError:
             print("Error: could not commit files")
             sys.exit(1)
 
     try:
         # Push the new branch to the remote repository
-        if args.force:
-            subprocess.run(["git", "push", "--force", "origin", args.branch_name])
+        if arguments.force:
+            subprocess.run(["git", "push", "--force", "origin", arguments.branch_name])
         else:
-            subprocess.run(["git", "push", "origin", args.branch_name])
+            subprocess.run(["git", "push", "origin", arguments.branch_name])
     except subprocess.CalledProcessError as e:
         print(e)
         sys.exit(1)
