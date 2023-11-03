@@ -1,9 +1,9 @@
+#!/usr/bin/python
 import argparse
 import subprocess
 import sys
 
 import os
-import git
 
 
 def create_branch(arguments):
