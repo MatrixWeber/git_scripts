@@ -25,6 +25,7 @@ def create_branch(arguments):
             print("Error: not a Git repository")
             sys.exit(1)
 
+
 def add_and_commit_message(commit_message):
     # Commit the changes with the given commit message
     if commit_message:
@@ -32,6 +33,7 @@ def add_and_commit_message(commit_message):
     else:
         print("Error: could not commit files. commit message expected")
         sys.exit(1)
+
 
 def commit(arguments):
     # Add the specified files to the staging area, or add all modified files if none are specified
@@ -109,19 +111,32 @@ def parse_arguments():
     parser.add_argument("-b", "--branch_name",
                         help="the name of the new branch (optional, defaults to the current branch)", default=None)
     parser.add_argument("-f", "--force", help="force push", action='store_true')
-    parser.add_argument("commit_message", help="the commit message", nargs="?")
+    parser.add_argument("-i", "--ignore", help="ignore the forced commit message argument", action="store_true")
+    parser.add_argument("commit_message", help="the commit message with git reference which at least should contain the PLUSCONTROL/buildenv#1018", nargs="?")
     parser.add_argument("files", help="a list of files to commit (optional, defaults to all modified files)", nargs="*")
-    return parser.parse_args()
+    return parser
 
 
-if __name__ == "__main__":
-    arguments = parse_arguments()
-
-    create_branch(arguments)
-
+def start_action(args):
+    create_branch(args)
     if is_toplevel_git_directory_with_submodules():
         commit_toplevel()
     else:
-        commit(arguments)
+        commit(args)
+    push(args)
 
-    push(arguments)
+
+if __name__ == "__main__":
+    parser = parse_arguments()
+    arguments = parser.parse_args()
+
+    if not arguments.ignore and not arguments.commit_message:
+        parser.error("the following arguments are required: commit_message")
+    elif not arguments.ignore:
+        if "PLUSCONTROL/" in arguments.commit_message:
+            start_action(arguments)
+        else:
+            parser.error("the commit_message does not contain the gitlab reference starts with PLUSCONTROL/.....")
+    else:
+        start_action(arguments)
+
