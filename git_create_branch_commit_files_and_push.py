@@ -51,8 +51,19 @@ def commit(arguments):
         add_and_commit_message(arguments.commit_message)
 
 
+def extract_lines_from_diff_output(diff_output):
+    chars_to_look_for = [':', '>']
+    changed_lines = ''
+    for line_bytes in diff_output.splitlines():
+        line = str(line_bytes)
+        for char_to_look_for in chars_to_look_for:
+            if char_to_look_for in line:
+                changed_lines += (line[2:-1] + '\n')
+    return changed_lines
+
+
 def commit_toplevel():
-    """Extracts the changed lines from a git diff output.
+    """Extracts the changed lines from a git diff output e.g.
         Submodule libraries/thirdparty_googletest contains modified content
         Submodule libraries/thirdparty_googletest 52310c4e5..bd09af8d8:
           > some changes due to the new google test tag
@@ -61,25 +72,14 @@ def commit_toplevel():
         Submodule libraries/time_backupper contains modified content
         Submodule plustools/pluscontrol_srv contains modified content
 
-    Args:
-      diff_output: The output of the `git diff` command.
-
-    Returns:
-      A list of tuples, where each tuple contains the following:
-        * The name of the file that changed.
-        * A list of line numbers that changed.
+        The search pattern is a ':' or a '>'.
+        If one of those characters exists add the string to the commit message.
+        At the end of the for loop commit message
     """
     # Get the git diff output.
     diff_output = subprocess.check_output(['git', 'diff'])
 
-    # Extract the changed lines from the git diff output.
-    chars_to_look_for = [':', '>']
-    changed_lines = ''
-    for line_bytes in diff_output.splitlines():
-        line = str(line_bytes)
-        for char_to_look_for in chars_to_look_for:
-            if char_to_look_for in line:
-                changed_lines += (line[2:-1] + '\n')
+    changed_lines = extract_lines_from_diff_output(diff_output)
 
     add_and_commit_message(changed_lines)
 
