@@ -119,7 +119,7 @@ def parse_arguments():
 
 def start_action(args):
     create_branch(args)
-    if is_toplevel_git_directory_with_submodules():
+    if is_toplevel_git_directory_with_submodules() and not args.commit_message:
         commit_toplevel()
     else:
         commit(args)
