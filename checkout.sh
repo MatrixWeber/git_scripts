@@ -4,7 +4,7 @@
 
 git fetch --all
 
-# get number of params comming from command line 
+# get number of params coming from command line
 numParams="$#"
 
 if [ "$numParams" -ne 0 ]; then
