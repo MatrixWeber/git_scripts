@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 import os
-
+from termcolor import colored
 
 def create_branch(arguments):
     # Create a new branch with the given name, or use the current branch if none is specified
@@ -14,7 +14,7 @@ def create_branch(arguments):
             if output.returncode:
                 subprocess.run(["git", "checkout", arguments.branch_name], check=False)
         except subprocess.CalledProcessError:
-            print(f"Error: invalid branch name '{arguments.branch_name}'")
+            print(colored(f"Error: invalid branch name '{arguments.branch_name}'", 'red'))
             sys.exit(1)
     else:
         # Get the current branch name
@@ -30,8 +30,9 @@ def add_and_commit_message(commit_message):
     # Commit the changes with the given commit message
     if commit_message:
         subprocess.run(["git", "commit", "-am", commit_message])
+        print(colored("############ don't forget to move the lable in the gitlab ticket ############", 'red'))
     else:
-        print("Error: could not commit files. commit message expected")
+        print(colored("Error: could not commit files. commit message expected", 'red'))
         sys.exit(1)
 
 
@@ -44,10 +45,10 @@ def commit(arguments):
             try:
                 subprocess.run(["git", "commit", "-m", arguments.commit_message])
             except subprocess.CalledProcessError:
-                print(f"Error: could not commit files: '{arguments.files}'")
+                print(colored(f"Error: could not commit files: '{arguments.files}'", 'red'))
                 sys.exit(1)
         except subprocess.CalledProcessError:
-            print(f"Error: one or more files could not be added")
+            print(colored(f"Error: one or more files could not be added", 'red'))
             sys.exit(1)
     else:
         add_and_commit_message(arguments.commit_message)
@@ -111,7 +112,6 @@ def parse_arguments():
     parser.add_argument("-b", "--branch_name",
                         help="the name of the new branch (optional, defaults to the current branch)", default=None)
     parser.add_argument("-f", "--force", help="force push", action='store_true')
-    parser.add_argument("-i", "--ignore", help="ignore the forced commit message argument", action="store_true")
     parser.add_argument("commit_message", help="the commit message with git reference which at least should contain the PLUSCONTROL/buildenv#1018", nargs="?")
     parser.add_argument("files", help="a list of files to commit (optional, defaults to all modified files)", nargs="*")
     return parser
@@ -130,13 +130,8 @@ if __name__ == "__main__":
     parser = parse_arguments()
     arguments = parser.parse_args()
 
-    if not arguments.ignore and not arguments.commit_message:
+    if not arguments.commit_message:
         parser.error("the following arguments are required: commit_message")
-    elif not arguments.ignore:
-        if "PLUSCONTROL/" in arguments.commit_message:
-            start_action(arguments)
-        else:
-            parser.error("the commit_message does not contain the gitlab reference starts with PLUSCONTROL/.....")
     else:
         start_action(arguments)
 

@@ -18,7 +18,7 @@ else
 
     # Get the list of last 10 remote branches committed
 
-    branches=$(git for-each-ref --sort=-committerdate --format='%(refname:short)|%(committerdate:iso)|%(committername)' refs/remotes/origin | head -n 10)
+    branches=$(git for-each-ref --sort=-committerdate --format='%(refname:short)|%(committerdate:iso)|%(committername)' refs/remotes/origin | head -n 20)
 
     
 
